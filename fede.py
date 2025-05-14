@@ -3,7 +3,8 @@ import pandas as pd
 import plotly.express as px
 import pydeck as pdk
 
-# Configuración de página\ nst.set_page_config(
+# Configuración de página
+st.set_page_config(
     page_title="Dashboard Fedelobo Simulation",
     layout="wide",
     initial_sidebar_state="expanded"
