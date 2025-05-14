@@ -9,7 +9,7 @@ st.set_page_config(
 )
 
 # Logo del canal Fedelobo (coloca el archivo 'fedelobo_logo.png' en la carpeta o usa una URL)
-st.logo_image = "fedelobo_logo.png"
+st.logo_image = "fedelobo1.jpg"
 st.image(st.logo_image, width=120)
 
 # Título y descripción
