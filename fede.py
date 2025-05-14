@@ -9,14 +9,16 @@ st.set_page_config(
 )
 
 # Logo del canal Fedelobo (coloca el archivo 'fedelobo_logo.png' en la carpeta o usa una URL)
-st.logo_image = "fedelobo1.jpg"
-st.image(st.logo_image, width=120)
+logo_file = "fedelobo1.jpg"
+st.image(logo_file, width=120)
 
 # Título y descripción
 st.title("🧬 Simulación de Parecidos al Fedelobo")
 st.markdown(
-    "**Ámbito:** México 🇲🇽  
-    Análisis basado en distancia de Mahalanobis y distribución chi-cuadrada."
+    """
+**Ámbito:** México 🇲🇽  
+Análisis basado en distancia de Mahalanobis y distribución chi-cuadrada.
+    """
 )
 
 # --- Carga de datos ---
@@ -115,4 +117,5 @@ st.write("---")
 # --- Footer ---
 st.markdown(
     "*Desarrollado por Alexander Eduardo Rojas Garay*  
-    [LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)")
+    [LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)"
+)
