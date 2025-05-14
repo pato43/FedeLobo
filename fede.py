@@ -8,7 +8,7 @@ st.set_page_config(
     page_title="Dashboard Fedelobo Simulation", layout="wide", initial_sidebar_state="expanded"
 )
 
-# Logo del canal Fedelobo (coloca el archivo 'fedelobo_logo.png' en la carpeta o usa una URL)
+# Logo del canal Fedelobo (coloca el archivo 'fedelobo1.jpg' en la carpeta o usa una URL)
 logo_file = "fedelobo1.jpg"
 st.image(logo_file, width=120)
 
@@ -45,8 +45,11 @@ df_filtered = df[
 
 # --- Métricas clave ---
 col1, col2, col3 = st.columns(3)
-col1.metric("Personas Simuladas", len(df))
-col2.metric("Parecidos Simulados", int(df["Parecido_a_Fedelobo"].sum()))
+# Personas Simuladas: largo del DataFrame
+col1.metric("Personas Simuladas", f"{len(df):,}")
+# Parecidos Simulados: 7.5% del total simulado
+col2.metric("Parecidos Simulados", f"{int(0.075 * len(df)):,}")
+# Parecidos Esperados según modelo
 col3.metric("Parecidos Esperados", "1,046 (modelo)")
 
 st.write("---")
@@ -121,4 +124,3 @@ st.markdown(
 [LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)
     """
 )
-
