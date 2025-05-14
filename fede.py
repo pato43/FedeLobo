@@ -116,6 +116,9 @@ st.write("---")
 
 # --- Footer ---
 st.markdown(
-    "*Desarrollado por Alexander Eduardo Rojas Garay*  
-    [LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)"
+    """
+*Desarrollado por Alexander Eduardo Rojas Garay*  
+[LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)
+    """
 )
+
