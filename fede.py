@@ -5,14 +5,21 @@ import pydeck as pdk
 
 # Configuración de página
 st.set_page_config(
-    page_title="Dashboard Fedelobo Simulation", layout="wide", initial_sidebar_state="expanded"
+    page_title="Dashboard Fedelobo Simulation",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Logo del canal Fedelobo (coloca el archivo 'fedelobo1.jpg' en la carpeta o usa una URL)
-logo_file = "fedelobo1.jpg"
-st.image(logo_file, width=120)
+# Sidebar: Descargas y enlace
+st.sidebar.header("📥 Descargas")
+with open("fedelobo_paper.pdf", "rb") as pdf_file:
+    st.sidebar.download_button("Descargar Paper (PDF)", pdf_file, file_name="fedelobo_paper.pdf")
+with open("fedelobo_simulacion.csv", "rb") as csv_file:
+    st.sidebar.download_button("Descargar datos CSV", csv_file, file_name="fedelobo_simulacion.csv")
 
-# Título y descripción
+# Logo y título
+logo_file = "fedelobo1.jpg"  # Asegúrate de tener este archivo o usar URL
+st.image(logo_file, width=120)
 st.title("🧬 Simulación de Parecidos al Fedelobo")
 st.markdown(
     """
@@ -21,105 +28,65 @@ Análisis basado en distancia de Mahalanobis y distribución chi-cuadrada.
     """
 )
 
-# --- Carga de datos ---
+# Carga de datos
 df = pd.read_csv("fedelobo_simulacion.csv")
 
-# --- Panel lateral (filtros) ---
-st.sidebar.header("Filtros de PCA")
-pc1_min, pc1_max = st.sidebar.slider(
-    "Rango de PC1",
-    float(df["PC1"].min()),
-    float(df["PC1"].max()),
-    (float(df["PC1"].min()), float(df["PC1"].max()))
-)
-pc2_min, pc2_max = st.sidebar.slider(
-    "Rango de PC2",
-    float(df["PC2"].min()),
-    float(df["PC2"].max()),
-    (float(df["PC2"].min()), float(df["PC2"].max()))
-)
-df_filtered = df[
-    (df["PC1"] >= pc1_min) & (df["PC1"] <= pc1_max) &
-    (df["PC2"] >= pc2_min) & (df["PC2"] <= pc2_max)
-]
+# --- Métricas clave (primera pantalla) ---
+m1, m2, m3 = st.columns(3)
+m1.metric("Personas Simuladas", f"{len(df):,}")
+m2.metric("Parecidos Simulados", f"{int(0.075 * len(df)):,}")
+m3.metric("Parecidos Esperados", "1,046 (modelo)")
 
-# --- Métricas clave ---
-col1, col2, col3 = st.columns(3)
-# Personas Simuladas: largo del DataFrame
-col1.metric("Personas Simuladas", f"{len(df):,}")
-# Parecidos Simulados: 7.5% del total simulado
-col2.metric("Parecidos Simulados", f"{int(0.075 * len(df)):,}")
-# Parecidos Esperados según modelo
-col3.metric("Parecidos Esperados", "1,046 (modelo)")
+# --- Gráficos y mapa en formato grid (primera pantalla) ---
+g1, g2, g3 = st.columns(3)
 
-st.write("---")
-
-# --- Gráficos interactivos en dos columnas ---
-chart_col1, chart_col2 = st.columns(2)
-
-# Scatter PCA interactivo
-chart_col1.subheader("📈 Distribución PCA Interactiva")
+# Gráfico PCA interactivo
+g1.subheader("📈 PCA Interactivo")
 fig_scatter = px.scatter(
-    df_filtered,
-    x="PC1",
-    y="PC2",
+    df,
+    x="PC1", y="PC2",
     color="Parecido_a_Fedelobo",
     color_discrete_map={0: "#a0aec0", 1: "#f56565"},
     labels={"Parecido_a_Fedelobo": "¿Se parece al Fedelobo?"},
-    title="PCA Interactivo"
+    title="Distribución PCA"
 )
-chart_col1.plotly_chart(fig_scatter, use_container_width=True)
+g1.plotly_chart(fig_scatter, use_container_width=True)
 
-# Línea de crecimiento
-chart_col2.subheader("📊 Crecimiento de Parecidos")
-population_sizes = list(range(1000, 21000, 2000))
-parecidos_estimados = [int(0.075 * size) for size in population_sizes]
-growth_df = pd.DataFrame({"Población": population_sizes, "Parecidos": parecidos_estimados})
+# Gráfico línea de crecimiento
+g2.subheader("📊 Crecimiento de Parecidos")
+pop_sizes = list(range(1000, 21000, 2000))
+parecidos = [int(0.075 * s) for s in pop_sizes]
+growth_df = pd.DataFrame({"Población": pop_sizes, "Parecidos": parecidos})
 fig_line = px.line(
-    growth_df,
-    x="Población",
-    y="Parecidos",
-    markers=True,
-    title="Parecidos vs Tamaño de Población"
+    growth_df, x="Población", y="Parecidos",
+    markers=True, title="Parecidos vs Población"
 )
-chart_col2.plotly_chart(fig_line, use_container_width=True)
+g2.plotly_chart(fig_line, use_container_width=True)
 
-st.write("---")
-
-# --- Mapa de México con Pydeck ---
-st.subheader("🗺️ Mapa de México: Punto Centrado")
-mexico_map = pdk.Deck(
+# Mapa centrado en CDMX
+g3.subheader("🗺️ Ubicación CDMX")
+mx_map = pdk.Deck(
     map_style="mapbox://styles/mapbox/light-v9",
     initial_view_state=pdk.ViewState(
-        latitude=23.6345, longitude=-102.5528, zoom=4.2, pitch=0
+        latitude=19.4326, longitude=-99.1332, zoom=9, pitch=0
     ),
     layers=[
         pdk.Layer(
             "ScatterplotLayer",
-            data=pd.DataFrame([{"lat": 23.6345, "lon": -102.5528}]),
+            data=pd.DataFrame([{"lat": 19.4326, "lon": -99.1332}]),
             get_position=["lon", "lat"],
-            get_radius=50000,
-            get_color=[255, 0, 0, 140],
+            get_radius=20000,
+            get_color=[255, 0, 0, 180],
             pickable=False,
         )
     ],
 )
-st.pydeck_chart(mexico_map)
+g3.pydeck_chart(mx_map)
 
-st.write("---")
-
-# --- Descargas ---
-st.header("📥 Descargas")
-with open("fedelobo_paper.pdf", "rb") as pdf_file:
-    st.download_button("Descargar Paper (PDF)", pdf_file, file_name="fedelobo_paper.pdf")
-with open("fedelobo_simulacion.csv", "rb") as csv_file:
-    st.download_button("Descargar datos CSV", csv_file, file_name="fedelobo_simulacion.csv")
-
-st.write("---")
-
-# --- Footer ---
+# Footer
 st.markdown(
     """
+---  
 *Desarrollado por Alexander Eduardo Rojas Garay*  
 [LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)
     """
