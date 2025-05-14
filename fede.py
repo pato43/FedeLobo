@@ -17,9 +17,11 @@ logo_file = "fedelobo1.jpg"  # Actualiza con la ruta/URL de tu logo
 col_logo, col_title = st.columns([1, 5])
 col_logo.image(logo_file, width=100)
 col_title.markdown(
-    "# 🧬 Simulación de Parecidos al Fedelobo  
-    **Ámbito:** México 🇲🇽  
-    Análisis basado en distancia de Mahalanobis y distribución chi-cuadrada."
+    """
+# 🧬 Simulación de Parecidos al Fedelobo  
+**Ámbito:** México 🇲🇽  
+Análisis basado en distancia de Mahalanobis y distribución chi-cuadrada.
+    """
 )
 
 # Métricas clave
@@ -36,7 +38,8 @@ g1, g2, g3 = st.columns(3)
 # 1) PCA Interactivo
 g1.subheader("📈 PCA Interactivo")
 fig_scatter = px.scatter(
-    df, x="PC1", y="PC2",
+    df,
+    x="PC1", y="PC2",
     color="Parecido_a_Fedelobo",
     color_discrete_map={0: "#a0aec0", 1: "#f56565"},
     labels={"Parecido_a_Fedelobo": "¿Se parece?"}
@@ -49,7 +52,8 @@ pop_sizes = list(range(1000, 21000, 2000))
 parecidos = [int(0.075 * s) for s in pop_sizes]
 growth_df = pd.DataFrame({"Población": pop_sizes, "Parecidos": parecidos})
 fig_line = px.line(
-    growth_df, x="Población", y="Parecidos",
+    growth_df,
+    x="Población", y="Parecidos",
     markers=True
 )
 g2.plotly_chart(fig_line, use_container_width=True, height=300)
@@ -58,15 +62,18 @@ g2.plotly_chart(fig_line, use_container_width=True, height=300)
 g3.subheader("🗺️ Mapa de México por Estado")
 geojson_path = "mexicoHigh.json"
 mexico_geo = pdk.Layer(
-    "GeoJsonLayer", data=geojson_path,
-    stroked=True, filled=True,
+    "GeoJsonLayer",
+    data=geojson_path,
+    stroked=True,
+    filled=True,
     get_fill_color=[80, 80, 80, 80],
     get_line_color=[200, 200, 200, 150]
 )
 deck = pdk.Deck(
     map_style="mapbox://styles/mapbox/dark-v10",
     initial_view_state=pdk.ViewState(latitude=23.6345, longitude=-102.5528, zoom=4.2),
-    layers=[mexico_geo], height=300
+    layers=[mexico_geo],
+    height=300
 )
 g3.pydeck_chart(deck, use_container_width=True)
 
@@ -74,12 +81,22 @@ st.markdown("---")
 
 # Descargas al final en dos columnas
 dl1, dl2 = st.columns(2)
-dl1.download_button("📄 Descargar Paper (PDF)", open("fedelobo_paper.pdf","rb"), file_name="fedelobo_paper.pdf")
-dl2.download_button("📈 Descargar datos CSV", open("fedelobo_simulacion.csv","rb"), file_name="fedelobo_simulacion.csv")
+dl1.download_button(
+    "📄 Descargar Paper (PDF)",
+    open("fedelobo_paper.pdf", "rb"),
+    file_name="fedelobo_paper.pdf"
+)
+dl2.download_button(
+    "📈 Descargar datos CSV",
+    open("fedelobo_simulacion.csv", "rb"),
+    file_name="fedelobo_simulacion.csv"
+)
 
 # Footer
 st.markdown(
-    "---  
-    *Desarrollado por Alexander Eduardo Rojas Garay*  
-    [LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)"
+    """
+---  
+*Desarrollado por Alexander Eduardo Rojas Garay*  
+[LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)
+    """
 )
