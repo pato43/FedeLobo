@@ -1,96 +1,118 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+import plotly.express as px
+import pydeck as pdk
 
-# Configuración inicial
-st.set_page_config(page_title="Simulación de Parecidos al Fedelobo", layout="wide")
+# Configuración de página
+st.set_page_config(
+    page_title="Dashboard Fedelobo Simulation", layout="wide", initial_sidebar_state="expanded"
+)
 
-# --- Datos base (puedes cambiar las rutas o subir tus archivos) ---
-csv_file = "fedelobo_simulacion.csv"  # Debes tenerlo en la misma carpeta
-pdf_file = "fedelobo_paper.pdf"        # El PDF generado de tu paper
+# Logo del canal Fedelobo (coloca el archivo 'fedelobo_logo.png' en la carpeta o usa una URL)
+st.logo_image = "fedelobo_logo.png"
+st.image(st.logo_image, width=120)
 
-# Cargar datos
-df = pd.read_csv(csv_file)
-
-# --- Estilo gráfico ---
-sns.set(style="whitegrid")
-
-# --- Título ---
+# Título y descripción
 st.title("🧬 Simulación de Parecidos al Fedelobo")
-st.markdown("""
-Esta plataforma muestra el análisis matemático y la simulación realizada para estimar
-cuántas personas en una población grande podrían parecerse al creador de contenido mexicano "Fedelobo".  
-Se utilizó un modelo basado en distancia de Mahalanobis y distribución chi-cuadrada.
-""")
+st.markdown(
+    "**Ámbito:** México 🇲🇽  
+    Análisis basado en distancia de Mahalanobis y distribución chi-cuadrada."
+)
 
-# --- Resultados clave ---
-st.header("🔍 Resultados Principales")
+# --- Carga de datos ---
+df = pd.read_csv("fedelobo_simulacion.csv")
+
+# --- Panel lateral (filtros) ---
+st.sidebar.header("Filtros de PCA")
+pc1_min, pc1_max = st.sidebar.slider(
+    "Rango de PC1",
+    float(df["PC1"].min()),
+    float(df["PC1"].max()),
+    (float(df["PC1"].min()), float(df["PC1"].max()))
+)
+pc2_min, pc2_max = st.sidebar.slider(
+    "Rango de PC2",
+    float(df["PC2"].min()),
+    float(df["PC2"].max()),
+    (float(df["PC2"].min()), float(df["PC2"].max()))
+)
+df_filtered = df[
+    (df["PC1"] >= pc1_min) & (df["PC1"] <= pc1_max) &
+    (df["PC2"] >= pc2_min) & (df["PC2"] <= pc2_max)
+]
+
+# --- Métricas clave ---
 col1, col2, col3 = st.columns(3)
-col1.metric("Personas Simuladas", "10,000")
-col2.metric("Parecidos Simulados", "750")
+col1.metric("Personas Simuladas", len(df))
+col2.metric("Parecidos Simulados", int(df["Parecido_a_Fedelobo"].sum()))
 col3.metric("Parecidos Esperados", "1,046 (modelo)")
 
 st.write("---")
 
-# --- Mostrar gráficos ---
-st.header("📈 Visualizaciones")
+# --- Gráficos interactivos en dos columnas ---
+chart_col1, chart_col2 = st.columns(2)
 
-# Gráfico PCA
-st.subheader("Distribución PCA de Parecidos al Fedelobo")
-fig, ax = plt.subplots(figsize=(8,6))
-sns.scatterplot(
-    data=df,
-    x="PC1", y="PC2",
-    hue="Parecido_a_Fedelobo",
-    palette=["#a0aec0", "#f56565"],
-    alpha=0.6
+# Scatter PCA interactivo
+chart_col1.subheader("📈 Distribución PCA Interactiva")
+fig_scatter = px.scatter(
+    df_filtered,
+    x="PC1",
+    y="PC2",
+    color="Parecido_a_Fedelobo",
+    color_discrete_map={0: "#a0aec0", 1: "#f56565"},
+    labels={"Parecido_a_Fedelobo": "¿Se parece al Fedelobo?"},
+    title="PCA Interactivo"
 )
-plt.title("Distribución PCA de Parecidos al Fedelobo")
-plt.xlabel("Componente Principal 1")
-plt.ylabel("Componente Principal 2")
-plt.legend(title="¿Se parece al Fedelobo?")
-st.pyplot(fig)
+chart_col1.plotly_chart(fig_scatter, use_container_width=True)
 
-# --- Segundo gráfico: Crecimiento
-st.subheader("Número de Parecidos vs Tamaño de Población")
+# Línea de crecimiento
+chart_col2.subheader("📊 Crecimiento de Parecidos")
 population_sizes = list(range(1000, 21000, 2000))
 parecidos_estimados = [int(0.075 * size) for size in population_sizes]
+growth_df = pd.DataFrame({"Población": population_sizes, "Parecidos": parecidos_estimados})
+fig_line = px.line(
+    growth_df,
+    x="Población",
+    y="Parecidos",
+    markers=True,
+    title="Parecidos vs Tamaño de Población"
+)
+chart_col2.plotly_chart(fig_line, use_container_width=True)
 
-fig2, ax2 = plt.subplots(figsize=(8,6))
-sns.lineplot(x=population_sizes, y=parecidos_estimados, marker="o", color="#f56565")
-plt.title("Crecimiento Estimado de Parecidos")
-plt.xlabel("Tamaño de la Población")
-plt.ylabel("Número de Parecidos")
-plt.grid(True)
-st.pyplot(fig2)
+st.write("---")
+
+# --- Mapa de México con Pydeck ---
+st.subheader("🗺️ Mapa de México: Punto Centrado")
+mexico_map = pdk.Deck(
+    map_style="mapbox://styles/mapbox/light-v9",
+    initial_view_state=pdk.ViewState(
+        latitude=23.6345, longitude=-102.5528, zoom=4.2, pitch=0
+    ),
+    layers=[
+        pdk.Layer(
+            "ScatterplotLayer",
+            data=pd.DataFrame([{"lat": 23.6345, "lon": -102.5528}]),
+            get_position=["lon", "lat"],
+            get_radius=50000,
+            get_color=[255, 0, 0, 140],
+            pickable=False,
+        )
+    ],
+)
+st.pydeck_chart(mexico_map)
 
 st.write("---")
 
 # --- Descargas ---
-st.header("📥 Descargas disponibles")
-
-with open(pdf_file, "rb") as pdf:
-    st.download_button(
-        label="📄 Descargar Paper PDF",
-        data=pdf,
-        file_name="fedelobo_paper.pdf",
-        mime="application/pdf"
-    )
-
-with open(csv_file, "rb") as csv:
-    st.download_button(
-        label="📈 Descargar Base de Datos CSV",
-        data=csv,
-        file_name="fedelobo_simulacion.csv",
-        mime="text/csv"
-    )
+st.header("📥 Descargas")
+with open("fedelobo_paper.pdf", "rb") as pdf_file:
+    st.download_button("Descargar Paper (PDF)", pdf_file, file_name="fedelobo_paper.pdf")
+with open("fedelobo_simulacion.csv", "rb") as csv_file:
+    st.download_button("Descargar datos CSV", csv_file, file_name="fedelobo_simulacion.csv")
 
 st.write("---")
 
 # --- Footer ---
-st.markdown("""
----
-*Desarrollado por Alexander Eduardo Rojas Garay*  
-[LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)
-""")
+st.markdown(
+    "*Desarrollado por Alexander Eduardo Rojas Garay*  
+    [LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)")
