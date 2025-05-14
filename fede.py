@@ -63,25 +63,27 @@ fig_line = px.line(
 )
 g2.plotly_chart(fig_line, use_container_width=True)
 
-# Mapa centrado en CDMX
-g3.subheader("🗺️ Ubicación CDMX")
-mx_map = pdk.Deck(
-    map_style="mapbox://styles/mapbox/light-v9",
-    initial_view_state=pdk.ViewState(
-        latitude=19.4326, longitude=-99.1332, zoom=9, pitch=0
-    ),
-    layers=[
-        pdk.Layer(
-            "ScatterplotLayer",
-            data=pd.DataFrame([{"lat": 19.4326, "lon": -99.1332}]),
-            get_position=["lon", "lat"],
-            get_radius=20000,
-            get_color=[255, 0, 0, 180],
-            pickable=False,
-        )
-    ],
+# Mapa de la República con GeoJSON
+g3.subheader("🗺️ Mapa de México por Estado")
+
+# Capa GeoJSON cargada desde el archivo
+geojson_path = "mexicoHigh.json"
+mexico_geo = pdk.Layer(
+    "GeoJsonLayer",
+    data=geojson_path,
+    stroked=True,
+    filled=True,
+    get_fill_color=[200, 200, 200, 100],
+    get_line_color=[0, 0, 0, 200],
 )
-g3.pydeck_chart(mx_map)
+
+# Renderizar el mapa
+deck = pdk.Deck(
+    map_style="mapbox://styles/mapbox/light-v9",
+    initial_view_state=pdk.ViewState(latitude=23.6345, longitude=-102.5528, zoom=4.2),
+    layers=[mexico_geo]
+)
+g3.pydeck_chart(deck)
 
 # Footer
 st.markdown(
