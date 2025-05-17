@@ -26,9 +26,21 @@ Análisis basado en distancia de Mahalanobis y distribución chi-cuadrada.
 
 # Métricas clave
 d1, d2, d3 = st.columns(3)
-d1.metric("Personas Simuladas", f"{len(df):,}")
-d2.metric("Parecidos Simulados", f"{int(0.075 * len(df)):,}")
+n_total = len(df)
+n_sim = int(0.075 * n_total)
+d1.metric("Personas Simuladas", f"{n_total:,}")
+d2.metric("Parecidos Simulados", f"{n_sim:,}")
 d3.metric("Parecidos Esperados", "1,046 (modelo)")
+
+st.markdown("---")
+
+# Conclusión por cada 100 personas
+ratio_100 = n_sim / n_total * 100
+st.markdown(
+    f"### Conclusión  \n"
+    f"Por cada 100 personas hay aproximadamente **{ratio_100:.1f}** individuos que se parecen al Fedelobo "
+    f"(unos 7–8 de cada 100)."
+)
 
 st.markdown("---")
 
@@ -95,8 +107,30 @@ dl2.download_button(
 # Footer
 st.markdown(
     """
----  
+---
 *Desarrollado por Alexander Eduardo Rojas Garay*  
 [LinkedIn](https://www.linkedin.com/in/alexander-eduardo-rojas-garay-b17471235/)
     """
 )
+
+# Información Adicional
+st.markdown("## 🔍 Estadísticas Descriptivas de las Características")
+st.table(df[["face_ratio","eye_height","eye_distance","brow_thickness"]]
+         .describe().round(3))
+
+st.markdown("## 🔢 Detalle de Parecidos")
+counts = df["Parecido_a_Fedelobo"].map({0:"No",1:"Sí"}).value_counts()
+st.table(counts.rename_axis("¿Se parece?").to_frame("Conteo"))
+
+st.markdown("## 📊 Ratio por 1000 Personas")
+ratio_1000 = n_sim / n_total * 1000
+st.write(f"Por cada 1,000 personas, aproximadamente **{ratio_1000:.1f}** se parecen al Fedelobo.")
+
+st.markdown("## 📈 Varianza Explicada PCA")
+# Asumimos df contiene PC1, PC2 precomputados; si no, omitir o comentar:
+if "PC1" in df and "PC2" in df:
+    st.write("- PC1 y PC2 ya mostrados en el gráfico PCA interactivo.")
+else:
+    st.write("Varianza PCA no disponible en este dataset.")
+
+st.markdown("### ¡Listo para explorar más detalles!") 
