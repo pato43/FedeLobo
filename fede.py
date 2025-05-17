@@ -34,12 +34,13 @@ d3.metric("Parecidos Esperados", "1,046 (modelo)")
 
 st.markdown("---")
 
-# Conclusión por cada 100 personas
-ratio_100 = n_sim / n_total * 100
+# Texto de conclusión
 st.markdown(
-    f"### Conclusión  \n"
-    f"Por cada 100 personas hay aproximadamente **{ratio_100:.1f}** individuos que se parecen al Fedelobo "
-    f"(unos 7–8 de cada 100)."
+    """
+**Conclusión general:**  
+Por cada 100 personas en la muestra, aproximadamente **7 a 8** individuos se parecen al Fedelobo,
+según nuestro modelo estadístico basado en Mahalanobis y chi-cuadrada.
+"""
 )
 
 st.markdown("---")
@@ -113,24 +114,19 @@ st.markdown(
     """
 )
 
-# Información Adicional
-st.markdown("## 🔍 Estadísticas Descriptivas de las Características")
-st.table(df[["face_ratio","eye_height","eye_distance","brow_thickness"]]
-         .describe().round(3))
-
-st.markdown("## 🔢 Detalle de Parecidos")
-counts = df["Parecido_a_Fedelobo"].map({0:"No",1:"Sí"}).value_counts()
-st.table(counts.rename_axis("¿Se parece?").to_frame("Conteo"))
-
-st.markdown("## 📊 Ratio por 1000 Personas")
-ratio_1000 = n_sim / n_total * 1000
-st.write(f"Por cada 1,000 personas, aproximadamente **{ratio_1000:.1f}** se parecen al Fedelobo.")
-
-st.markdown("## 📈 Varianza Explicada PCA")
-# Asumimos df contiene PC1, PC2 precomputados; si no, omitir o comentar:
-if "PC1" in df and "PC2" in df:
-    st.write("- PC1 y PC2 ya mostrados en el gráfico PCA interactivo.")
-else:
-    st.write("Varianza PCA no disponible en este dataset.")
-
-st.markdown("### ¡Listo para explorar más detalles!") 
+# Información adicional en texto
+st.markdown("## 📋 Información Adicional")
+st.markdown(
+    """
+- **Muestra total:** 10,000 perfiles simulados.  
+- **Tasa de parecidos:** ~7.5 % de la muestra.  
+- **Escala aplicada:** Por cada 1,000 personas, aproximadamente 75 se parecen al Fedelobo.  
+- **Herramientas usadas:** Python, Pandas, Plotly, Pydeck, Streamlit.  
+- **Metodología:**  
+  1. Simulación de datos multivariados.  
+  2. Preprocesamiento y estandarización.  
+  3. PCA para reducción de dimensionalidad.  
+  4. Distancia de Mahalanobis y umbral chi-cuadrada.  
+  5. Dashboard interactivo para visualización.
+"""
+)
